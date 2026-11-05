@@ -5,13 +5,13 @@
  * cooperative multitasking engine.
  */
 
-#include "wepoll.h"
 #include <assert.h>
 #include <string.h>
 
 #include <unistd.h>
 #if defined (_WIN32)
 #include <machinarium/wepoll.h>
+#include <windows.h>
 #else
 #include <sys/epoll.h>
 #endif
