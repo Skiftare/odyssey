@@ -5,11 +5,16 @@
  * cooperative multitasking engine.
  */
 
+#include "wepoll.h"
 #include <assert.h>
 #include <string.h>
 
 #include <unistd.h>
+#if defined (_WIN32)
+#include <machinarium/wepoll.h>
+#else
 #include <sys/epoll.h>
+#endif
 
 #include <machinarium/machinarium.h>
 #include <machinarium/epoll.h>
@@ -19,7 +24,11 @@ typedef struct mm_epoll_t mm_epoll_t;
 
 struct mm_epoll_t {
 	mm_poll_t poll;
+#if defined (_WIN32)
+    HANDLE fd
+#else
 	int fd;
+#endif
 	struct epoll_event *list;
 	int size;
 	int count;
@@ -42,8 +51,17 @@ static mm_poll_t *mm_epoll_create(void)
 		return NULL;
 	}
 	memset(epoll->list, 0, size);
+#if defined (_WIN32)
+    epoll->fd = epoll_create1(0);
+#else
 	epoll->fd = epoll_create1(EPOLL_CLOEXEC);
+#endif
+
+#if defined (_WIN32)
+    if (epoll->fd == NULL) {
+#else
 	if (epoll->fd == -1) {
+#endif
 		mm_free(epoll->list);
 		mm_free(epoll);
 		return NULL;
@@ -63,10 +81,17 @@ static void mm_epoll_free(mm_poll_t *poll)
 static int mm_epoll_shutdown(mm_poll_t *poll)
 {
 	mm_epoll_t *epoll = (mm_epoll_t *)poll;
+#if defined (_WIN32)
+    if (epoll->fd != NULL) {
+		epoll_close(epoll->fd);
+		epoll->fd = NULL;
+	}
+#else
 	if (epoll->fd != -1) {
 		close(epoll->fd);
 		epoll->fd = -1;
 	}
+#endif
 	return 0;
 }
 
@@ -146,7 +171,11 @@ static inline int mm_epoll_modify(mm_poll_t *poll, mm_fd_t *fd, int mask)
 	struct epoll_event ev;
 	int rc;
 
+#if defined (_WIN32)
+    ev.events = 0;
+#else
 	ev.events = EPOLLET;
+#endif
 	if (mask & MM_R) {
 		ev.events |= (EPOLLIN | EPOLLRDHUP);
 	}
