@@ -18,7 +18,7 @@
  */
 #define MM_LOOP_MAX_SLEEP_MS 1000
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(_WIN32)
 #include <machinarium/epoll.h>
 #define MM_POLL_IF mm_epoll_if
 #elif defined(__APPLE__) || defined(__FreeBSD__) || defined(__NetBSD__) || \
