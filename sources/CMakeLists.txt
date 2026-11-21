@@ -170,6 +170,10 @@ else()
     message(FATAL_ERROR "Unsupported platform for machinarium poll backend: ${CMAKE_SYSTEM_NAME}")
 endif()
 
+if (WIN32)
+    list(APPEND od_src port/win32/mman.c)
+endif()
+
 message(STATUS "Poll backend: ${CMAKE_SYSTEM_NAME}")
 
 set(CONFIG_GEN_DIR ${CMAKE_CURRENT_BINARY_DIR}/cfg)
