@@ -25,7 +25,7 @@ typedef struct mm_epoll_t mm_epoll_t;
 struct mm_epoll_t {
 	mm_poll_t poll;
 #if defined (_WIN32)
-    HANDLE fd
+    HANDLE fd;
 #else
 	int fd;
 #endif
