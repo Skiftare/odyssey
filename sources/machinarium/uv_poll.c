@@ -34,7 +34,28 @@ static void mm_uv_poll_cb(uv_poll_t *handle, int status, int events)
 	if (fd == NULL) {
 		return;
 	}
+	int delivered = events & (UV_READABLE | UV_WRITABLE | UV_DISCONNECT);
+	int interests = watcher->interests & ~delivered;
+	if (interests != watcher->interests) {
+		int rc;
 
+		if (interests == 0) {
+			rc = uv_poll_stop(&watcher->poll);
+		} else {
+			rc = uv_poll_start(&watcher->poll, interests,
+					   mm_uv_poll_cb);
+		}
+
+		if (rc != 0) {
+			fd->last_event = MM_ERR;
+			if (fd->on_err != NULL) {
+				fd->on_err(fd);
+			}
+			return;
+		}
+
+		watcher->interests = interests;
+	}
 	fd->last_event = 0;
 
 	if (status < 0 && (fd->mask & MM_ERR)) {
@@ -42,6 +63,7 @@ static void mm_uv_poll_cb(uv_poll_t *handle, int status, int events)
 		if (fd->on_err != NULL) {
 			fd->on_err(fd);
 		}
+                return; //?
 	}
 
 	if ((events & UV_DISCONNECT) && (fd->mask & MM_CLOSE)) {
@@ -264,13 +286,41 @@ static int mm_uv_del(mm_poll_t *poll, mm_fd_t *fd)
 
 	return mm_uv_modify(poll, fd, 0);
 }
+static int mm_uv_rearm(mm_poll_t *poll, mm_fd_t *fd, int mask)
+{
+	(void)poll;
+	mm_uv_watcher_t *watcher = (mm_uv_watcher_t *)fd->poll_handle;
+	if (watcher == NULL) {
+		return -1;
+	}
+	int uv_flags = 0;
+	if (mask & MM_R) {
+		uv_flags |= UV_READABLE;
+	}
+	if (mask & MM_W) {
+		uv_flags |= UV_WRITABLE;
+	}
+	if (mask & MM_CLOSE) {
+		uv_flags |= UV_DISCONNECT;
+	}
+	int interests = watcher->interests | uv_flags;
+	if (interests == watcher->interests) {
+		return 0;
+	}
 
-mm_pollif_t mm_uv_if = {
-	.name = "libuv",
-	.create = mm_uv_create,
-	.free = mm_uv_free,
-	.shutdown = mm_uv_shutdown,
-	.step = mm_uv_step,
-	.add = mm_uv_add,
-	.del = mm_uv_del,
-};
+	int rc = uv_poll_start(&watcher->poll, interests, mm_uv_poll_cb);
+	if (rc != 0) {
+		return -1;
+	}
+	watcher->interests = interests;
+	return 0;
+}
+
+mm_pollif_t mm_uv_if = { .name = "libuv",
+			 .create = mm_uv_create,
+			 .free = mm_uv_free,
+			 .shutdown = mm_uv_shutdown,
+			 .step = mm_uv_step,
+			 .add = mm_uv_add,
+			 .del = mm_uv_del,
+			 .rearm = mm_uv_rearm };

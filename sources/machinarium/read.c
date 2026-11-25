@@ -63,6 +63,10 @@ static inline int machine_read_to(mm_io_t *io, machine_msg_t *msg, size_t size,
 		if (rc == -1) {
 			int errno_ = machine_errno();
 			if (machine_errno_retryable(errno_)) {
+				rc = mm_io_rearm(io, MM_R);
+				if (rc == -1) {
+					return -1;
+				}
 				rc = mm_io_wait(io, time_ms);
 				if (rc == -1) {
 					return -1;

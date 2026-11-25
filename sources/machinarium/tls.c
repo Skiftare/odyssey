@@ -688,6 +688,11 @@ int mm_tls_handshake(mm_io_t *io, uint32_t timeout)
 		int error = SSL_get_error(io->tls_ssl, rc);
 		if (error == SSL_ERROR_WANT_READ ||
 		    error == SSL_ERROR_WANT_WRITE) {
+			int mask = error == SSL_ERROR_WANT_READ ? MM_R : MM_W;
+
+			if (mm_io_rearm(io, mask) == -1) {
+				return -1;
+			}
 			rc = mm_io_wait_deadline(io);
 			if (rc == -1) {
 				return -1;
@@ -740,6 +745,12 @@ int mm_tls_shutdown(mm_io_t *io, uint32_t timeout)
 		int error = SSL_get_error(io->tls_ssl, rc);
 		if (error == SSL_ERROR_WANT_READ ||
 		    error == SSL_ERROR_WANT_WRITE) {
+			int mask = error == SSL_ERROR_WANT_READ ? MM_R : MM_W;
+
+			if (mm_io_rearm(io, mask) == -1) {
+				return -1;
+			}
+			
 			if (mm_io_wait_deadline(io) == -1) {
 				return -1;
 			}

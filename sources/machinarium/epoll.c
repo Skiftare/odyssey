@@ -45,8 +45,6 @@ static mm_poll_t *mm_epoll_create(void)
 
 	epoll->fd = epoll_create1(EPOLL_CLOEXEC);
 
-
-
 	if (epoll->fd == -1) {
 		mm_free(epoll->list);
 		mm_free(epoll);
@@ -151,7 +149,6 @@ static inline int mm_epoll_modify(mm_poll_t *poll, mm_fd_t *fd, int mask)
 	struct epoll_event ev;
 	int rc;
 
-
 	ev.events = EPOLLET;
 
 	if (mask & MM_R) {
@@ -234,11 +231,18 @@ static int mm_epoll_del(mm_poll_t *poll, mm_fd_t *fd)
 
 	return mm_epoll_modify(poll, fd, 0);
 }
-
+static int mm_epoll_rearm(mm_poll_t *poll, mm_fd_t *fd, int mask)
+{
+	(void)poll;
+	(void)fd;
+	(void)mask;
+	return 0;
+}
 mm_pollif_t mm_epoll_if = { .name = "epoll",
 			    .create = mm_epoll_create,
 			    .free = mm_epoll_free,
 			    .shutdown = mm_epoll_shutdown,
 			    .step = mm_epoll_step,
 			    .add = mm_epoll_add,
-			    .del = mm_epoll_del };
+			    .del = mm_epoll_del,
+			    .rearm = mm_epoll_rearm };

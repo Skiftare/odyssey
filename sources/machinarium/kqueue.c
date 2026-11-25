@@ -251,11 +251,18 @@ static int mm_kqueue_del(mm_poll_t *poll, mm_fd_t *fd)
 
 	return mm_kqueue_modify(poll, fd, 0);
 }
-
+static int mm_kqueue_rearm(mm_poll_t *poll, mm_fd_t *fd, int mask)
+{
+	(void)poll;
+	(void)fd;
+	(void)mask;
+	return 0;
+}
 mm_pollif_t mm_kqueue_if = { .name = "kqueue",
 			     .create = mm_kqueue_create,
 			     .free = mm_kqueue_free,
 			     .shutdown = mm_kqueue_shutdown,
 			     .step = mm_kqueue_step,
 			     .add = mm_kqueue_add,
-			     .del = mm_kqueue_del };
+			     .del = mm_kqueue_del,
+			     .rearm = mm_kqueue_rearm };

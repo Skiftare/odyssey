@@ -23,6 +23,7 @@ struct mm_pollif {
 		   void *on_err_arg, mm_fd_callback_t on_close,
 		   void *on_close_arg);
 	int (*del)(mm_poll_t *, mm_fd_t *);
+	int (*rearm)(mm_poll_t *, mm_fd_t *, int mask);
 };
 
 struct mm_poll {

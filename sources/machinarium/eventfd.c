@@ -127,6 +127,11 @@ int mm_eventfd_read(mm_eventfd_t *efd, uint32_t timeout_ms)
 
 		int err = errno;
 		if (machine_errno_retryable(err)) {
+			rc = mm_loop_rearm(&mm_self->loop, &efd->handle, MM_R);
+			if (rc == -1) {
+				return -1;
+			}
+
 			rc = mm_cond_wait(&efd->cond, timeout_ms);
 			if (rc == MM_COND_WAIT_FAIL) {
 				mm_errno_set(ETIMEDOUT);

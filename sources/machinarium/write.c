@@ -107,6 +107,10 @@ MACHINE_API int machine_write_no_free(mm_io_t *destination, machine_msg_t *msg,
 		if (rc == -1) {
 			int errno_ = machine_errno();
 			if (machine_errno_retryable(errno_)) {
+				rc = mm_io_rearm(io, MM_W);
+				if (rc == -1) {
+					goto error;
+				}
 				rc = mm_io_wait(io, time_ms);
 				if (rc == -1) {
 					goto error;

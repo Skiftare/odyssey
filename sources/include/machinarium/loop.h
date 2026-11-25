@@ -51,3 +51,7 @@ static inline int mm_loop_delete(mm_loop_t *loop, mm_fd_t *fd)
 {
 	return loop->poll->iface->del(loop->poll, fd);
 }
+static inline int mm_loop_rearm(mm_loop_t *loop, mm_fd_t *fd, int mask)
+{
+	return loop->poll->iface->rearm(loop->poll, fd, mask);
+}
