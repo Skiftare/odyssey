@@ -85,6 +85,9 @@ set(ODYSSEY_COMPILER_STRING "${ODYSSEY_COMPILER_NAME}-${ODYSSEY_COMPILER_VERSION
 set(OD_DEVEL_LVL -1)
 
 set(COMMON_CFLAGS "-pedantic -Wall -Wextra -Werror -Wstrict-aliasing -pthread -g")
+if (WIN32)
+    string(REPLACE "-Werror " "" COMMON_CFLAGS "${COMMON_CFLAGS}")
+endif()
 
 # enable 128-bit CAS (cmpxchg16b) on x86-64 for lock-free 16-byte atomics.
 # On aarch64 it is available without any flag.
@@ -171,6 +174,17 @@ if (APPLE)
     # macOS: librt/libdl functionality is part of the base libSystem,
     # there are no separate librt.dylib / libdl.dylib to link against.
     set(od_libraries "")
+elseif (WIN32)
+    find_package(libuv CONFIG REQUIRED)
+
+    set(od_libraries "ws2_32" "regex")
+    if (TARGET libuv::uv_a)
+        list(APPEND od_libraries libuv::uv_a)
+    elseif (TARGET libuv::uv)
+        list(APPEND od_libraries libuv::uv)
+    else()
+        message(FATAL_ERROR "libuv package does not provide a CMake library target")
+    endif()
 else()
     set(od_libraries "rt" "dl")
 endif()
