@@ -727,3 +727,27 @@ int mm_io_read_ready(mm_io_t *io)
 {
 	return io->read_ready;
 }
+
+int mm_io_rearm(mm_io_t *io, int default_mask)
+{
+	if (!io->attached) {
+		mm_errno_set(ENOTCONN);
+		return -1;
+	}
+
+	int mask = 0;
+
+	if (io->want & MM_IO_WANT_READ) {
+		mask |= MM_R;
+	}
+
+	if (io->want & MM_IO_WANT_WRITE) {
+		mask |= MM_W;
+	}
+
+	if (mask == 0) {
+		mask = default_mask;
+	}
+
+	return mm_loop_rearm(&mm_self->loop, &io->handle, mask);
+}

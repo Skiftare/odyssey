@@ -56,6 +56,12 @@ static int mm_connect(mm_io_t *io, struct sockaddr *sa, uint32_t time_ms)
 		goto error;
 	}
 
+	rc = mm_io_rearm(io, MM_W);
+	if (rc == -1) {
+		(void)mm_io_detach(io);
+		goto error;
+	}
+
 	/*
 	 * wait for completion
 	 */

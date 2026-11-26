@@ -210,7 +210,7 @@ functional-test:
 	docker compose -f ./test/functional/docker-compose.yml up --exit-code-from odyssey --build --remove-orphans
 
 jemalloc-test:
-	docker compose -f ./test/jeamalloc/docker-compose.yml down || true
+	docker compose -f ./test/jemalloc/docker-compose.yml down || true
 	ODYSSEY_JEMALLOC_BUILD_TYPE=$(ODYSSEY_BUILD_TYPE) \
 	docker compose -f ./test/jemalloc/docker-compose.yml up --exit-code-from runner --build --remove-orphans
 

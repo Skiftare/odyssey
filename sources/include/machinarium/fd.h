@@ -22,6 +22,7 @@ typedef void (*mm_fd_callback_t)(mm_fd_t *);
 struct mm_fd {
 	int fd;
 	int mask;
+	void *poll_handle; //there mm_uv_watcher_t * will be store
 	mm_fd_callback_t on_read;
 	void *on_read_arg;
 	mm_fd_callback_t on_write;

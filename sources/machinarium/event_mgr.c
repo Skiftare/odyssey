@@ -33,6 +33,9 @@ static void mm_eventmgr_on_read(mm_fd_t *handle)
 	}
 	(void)id;
 #endif
+	rc = mm_loop_rearm(&mm_self->loop, handle, MM_R);
+	(void)rc;
+	assert(rc == 0);
 
 	/* wakeup event waiters */
 	mm_sleeplock_lock(&mgr->lock);

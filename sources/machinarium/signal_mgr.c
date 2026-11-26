@@ -103,6 +103,11 @@ int mm_signalmgr_wait(mm_signalmgr_t *mgr, uint32_t time_ms)
 		int err = errno;
 
 		if (machine_errno_retryable(err)) {
+			rc = mm_loop_rearm(&mm_self->loop, &mgr->fd, MM_R);
+			if (rc == -1) {
+				return -1;
+			}
+
 			mm_signalrd_t reader;
 			mm_list_init(&reader.link);
 			mm_list_append(&mgr->readers, &reader.link);
@@ -235,6 +240,11 @@ int mm_signalmgr_wait(mm_signalmgr_t *mgr, uint32_t time_ms)
 		int err = errno;
 
 		if (machine_errno_retryable(err)) {
+			rc = mm_loop_rearm(&mm_self->loop, &mgr->fd, MM_R);
+			if (rc == -1) {
+				return -1;
+			}
+
 			mm_signalrd_t reader;
 			mm_list_init(&reader.link);
 			mm_list_append(&mgr->readers, &reader.link);
